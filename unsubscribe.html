@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unsubscribe – Friends of Grand Union Canal</title>
+<style>
+body {
+  background: #f4f7fb;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: #172d46;
+  margin: 0;
+  padding: 0;
+}
+.foguc-form {
+  max-width: 420px;
+  margin: 2rem auto;
+  background: #ffffff;
+  border: 2px solid #004080;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.foguc-form img.logo {
+  width: 110px;
+  margin-bottom: 1rem;
+}
+h2 {
+  color: #004080;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+label {
+  display: block;
+  margin-top: 0.8rem;
+  text-align: left;
+  font-weight: 600;
+}
+input[type="email"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #a0b8d9;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+button {
+  background-color: #004080;
+  color: #ffffff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  width: 100%;
+  margin-top: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+button:hover {
+  background-color: #0059b3;
+}
+.footer-note {
+  font-size: 0.85rem;
+  color: #465c73;
+  margin-top: 0.9rem;
+  line-height: 1.3;
+}
+.spinner-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.spinner {
+  border: 4px solid #d9e2f0;
+  border-top: 4px solid #004080;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.popup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+.popup-content {
+  background: #ffffff;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  text-align: center;
+  color: #004080;
+  max-width: 320px;
+}
+.popup-content img {
+  width: 80px;
+  margin-bottom: 0.5rem;
+}
+.popup-content h3 {
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+.popup-content p {
+  font-size: 0.95rem;
+  color: #172d46;
+}
+.popup-content button {
+  margin-top: 1rem;
+  background: #004080;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+}
+.popup-content button:hover {
+  background: #0059b3;
+}
+</style>
+</head>
+<body>
+
+<form id="unsubscribeForm" class="foguc-form">
+  <img class="logo" src="https://friendsofgrandunioncanal-coder.github.io/foguc-assets/FoGUC_Logo.png" alt="FoGUC Logo">
+  <h2>Unsubscribe from Updates</h2>
+
+  <label for="email">Email Address</label>
+  <input type="email" id="email" name="email" required placeholder="you@example.com">
+
+  <button type="submit">Unsubscribe</button>
+
+  <p class="footer-note">
+    Enter your email to stop receiving updates from Friends of Grand Union Canal.
+  </p>
+</form>
+
+<script>
+(() => {
+  // ✅ Autofill from ?email= parameter
+  const params = new URLSearchParams(window.location.search);
+  const emailParam = params.get("email");
+  if (emailParam) {
+    document.getElementById("email").value = emailParam;
+  }
+
+  // ✅ Handle unsubscribe click
+  document.getElementById("unsubscribeForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const form = e.target;
+
+    const spinnerOverlay = document.createElement("div");
+    spinnerOverlay.className = "spinner-overlay";
+    spinnerOverlay.innerHTML = '<div class="spinner"></div>';
+    document.body.appendChild(spinnerOverlay);
+
+    const email = form.email.value.trim();
+    const endpoint =
+      "https://script.google.com/macros/s/AKfycbxFYypWfi40gdcrUQamJ0Je3JDYEVT90GTOZelKE3xlPlU9IJyE--IdOoU2xK2hgsbfUg/exec?unsubscribe=" +
+      encodeURIComponent(email);
+
+    try {
+      await fetch(endpoint, { method: "GET", mode: "no-cors" });
+      spinnerOverlay.remove();
+
+      const popup = document.createElement("div");
+      popup.className = "popup";
+      popup.innerHTML = `
+        <div class="popup-content">
+          <img src="https://friendsofgrandunioncanal-coder.github.io/foguc-assets/FoGUC_Logo.png" alt="FoGUC Logo">
+          <h3>You're Unsubscribed</h3>
+          <p>${email} has been removed from our mailing list.</p>
+          <button id="closePopup">Close</button>
+        </div>`;
+      document.body.appendChild(popup);
+      document.getElementById("closePopup").addEventListener("click", () => popup.remove());
+      form.reset();
+    } catch (err) {
+      spinnerOverlay.remove();
+      alert("There was a problem unsubscribing. Please try again later.");
+      console.error(err);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
